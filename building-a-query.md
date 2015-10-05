@@ -4,7 +4,13 @@ Querying Wikipedia APIs from Python
 Ben Lewis
 
 
-This is an introduction to the [https://www.mediawiki.org/wiki/API:Main_page](MediaWiki API); MediaWiki is the software that runs Wikipedia and associated projects (and the CDSW wiki!), and it exposes an API that lets users write queries and get information back about practically any part of Wikipedia. The site I linked to describes the API and all its various features, in more depth than we'll cover here.
+This is an introduction to the [MediaWiki API][mw-api]; MediaWiki is the
+software that runs Wikipedia and associated projects (and the CDSW wiki!), and
+it exposes an API that lets users write queries and get information back about
+practically any part of Wikipedia. The site I linked to describes the API and
+all its various features, in more depth than we'll cover here.
+
+[mw-api]: https://www.mediawiki.org/wiki/API:Main_page "API documentation."
 
 # Making a call and parsing the pieces
 
@@ -18,8 +24,9 @@ This is an introduction to the [https://www.mediawiki.org/wiki/API:Main_page](Me
         + 'format=json')
 
 What we have above is a call to the _Wikipedia API_. I've broken this apart into
-separate stanzas to make each section stand alone, but it would work as one
-string too.
+separate, concatenated stanzas to make each section stand alone, but it would
+work as one string too. This makes explaining each part easier, and provides a
+clean segue into the next way we'll call this code.
 
 ## The endpoint
 
@@ -116,13 +123,15 @@ let's create our dictionary:
 
 As you read each line, look back at the query we used before; note how instead
 of each field being `"field=value&"`, now they're keys and values. We can run
-our query again, this time with a much shorter URL:
+our query again, this time without building that big huge string:
 
-    ENDPOINT = 'https://en.wikipedia.org/w/api.php'
     wp_call = requests.get(ENDPOINT, params=parameters)
 
-This time, instead of using a very long URL, we can just use the endpoint as the
-URL, and provide our API call parameters as the "params" named parameter.
+Now the reason for creating a variable to store the endpoint URL makes more
+sense; suddenly, instead of having to rewrite that long string, you just have to
+type out the variable name (a quick call to
+`len("'https://en.wikipedia.org/w/api.php'")` tells me that typing out the
+string, with delimiters, is 36 characters. `ENDPOINT`, on the other hand, is 8.)
 
 We're going to use a slightly different call structure this time, and take
 advantage of a field I mentioned but didn't do much with last time: the continue
