@@ -54,7 +54,7 @@ By setting `action=query`, we're requesting information from the Wikipedia
 servers. Note that this _query_ is unrelated to the _query string_; if we wanted
 to edit Wikipedia via the API (which is possible, the syntax is different and
 outside the scope of this session), we would write `action=edit` instead. The
-`action` parameter is required in a wikipedia call.
+`action` parameter is required in a MediaWiki API call.
 
 #### Action parameter: Property
 Using `prop=links` tells the API we want information about links on a page (or
@@ -146,9 +146,7 @@ field.
                 print(link['title'])
 
         if 'continue' in response:
-            # This next line is almost-magic. It is identical to the syntax
-            # parameters['continue'] = response['continue']
-            parameters.update(response['continue'])
+            parameters['continue'] = response['continue']['continue']
         else:
             break
 
@@ -191,7 +189,8 @@ we need to make sure each list is present before we change it:
                 page_links[page_title].extend(response['query']['pages'][page]['links'])
 
         if 'continue' in response:
-            parameters.update(response['continue'])
+            parameters['continue'] = response['continue']['continue']
+            parameters['plcontinue'] = response['continue']['plcontinue']
         else:
             break
 
@@ -216,13 +215,21 @@ some other types of queries we can run.
 # Getting revisions to an article
 We've now learned how to build a query, how to look for different pieces, and
 how to modify our basic query. Instead of continuing to look at links for the
-moment, let's look into what we can do with another type of query: revisions to
-articles.
+moment, let's look into what we can do with another type of data the Wikipedia
+API offers: revisions to articles.
 
-The revisions query has lots and lots of options, because a revision is a really
-rich topic. There's all sorts of data surrounding a revision; when a user made
-it, who made it, what the content is, what the comment about the change is; all
-of these can make for useful things to study.
+Each _revision_ is a separate change to a Wikipedia article. The revision
+datatype in the Wikipedia API captures all sorts of metadata about the change
+made, in addition to the actual content of the change; it captures the username
+(or another identifier, we'll talk about that in a moment), the time the change
+was made, the comment the user making the change left in the comment field, and
+a hash of the change (a unique number generated from the content of the change
+to represent it.) We'll be looking at usernames and a flag that gets set for
+some of them. (A flag is a boolean value, `true` or `false`, which is normally
+`false` unless some specific condition is met.)
+
+As before, there's much more to this API than what we're covering here. I highly
+recommend visiting the API documentation and reading more there.
 
 ## Looking for anonymous editors
 So, let's take a moment to explore the responses data that we got. If you
@@ -263,7 +270,7 @@ long as its condition is true, it will continue running.
     iter = 0
     while iter < 10:
         iter = iter + 1
-    print(iter)
+        print(iter)
 
 Go ahead and run the block of code above in your interpreter. Note how it prints
 the numbers 1 through 10 and then stops; this is a basic while loop. Now let's
@@ -272,9 +279,9 @@ write it a different way:
     iter = 0
     while True:
         iter = 1
-    print(iter)
-    if iter > 9:
-        break
+        print(iter)
+        if iter > 9:
+            break
 
 If you ran the block of code above, you'll note that your interpreter is still
 churning away, printing 1s. Press Control-C to interrupt the loop and break
@@ -284,9 +291,9 @@ it, then look at the following fixed version if you can't see it:
     iter = 0
     while True:
         iter = iter + 1
-    print(iter)
-    if iter > 9:
-        break
+        print(iter)
+        if iter > 9:
+            break
 
 That's better. Being able to break out of an infinite loop is a useful skill to
 have, and being able to recognize when your code is stuck in a loop is also
@@ -321,7 +328,8 @@ in, and we can start writing some code:
                     anon_editors.add(rev['user'])
 
         if 'continue' in response:
-            parameters.update(response['continue'])
+            parameters['continue'] = response['continue']['continue']
+            parameters['plcontinue'] = response['continue']['plcontinue']
         else:
             break
 

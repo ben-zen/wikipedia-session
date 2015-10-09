@@ -20,8 +20,7 @@ while True:
             print(link['title'])
 
     if 'continue' in response:
-        # This is almost-magic; it replaces parameters['continue'] with the
-        # contents of response['continue'], with cleaner syntax.
-        parameters.update(response['continue'])
+        parameters['continue'] = response['continue']['continue']
+        parameters['plcontinue'] = response['continue']['plcontinue']
     else:
         break
