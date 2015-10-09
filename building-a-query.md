@@ -34,10 +34,10 @@ The string `https://en.wikipedia.org/w/api.php` is the _endpoint_ for this call;
 this is the URL for the API itself. The part of the URL after the question mark
 is called the _query_, and it defines the work you want the API to perform.
 
-In order to avoid writing the same string over and over again, I've declared a
-variable, `ENDPOINT`, for this specific string. (It's all-caps to remind me to
-never write anything to it, only to read from it.) We'll be using this string
-every time we make a request.
+In order to avoid writing the same string over and over again, as well as avoid
+errors, I've declared a variable called `ENDPOINT` for this specific string.
+(It's all-caps to remind me to never write anything to it, only to read from
+it.) We'll be using this string every time we make a request.
 
 ## The query
 
@@ -232,33 +232,14 @@ As before, there's much more to this API than what we're covering here. I highly
 recommend visiting the API documentation and reading more there.
 
 ## Looking for anonymous editors
-So, let's take a moment to explore the responses data that we got. If you
-explore the revisions, some revisions have an extra key, in addition to `'user'`
-and `'timestamp'`; some also have `'anon'` -- these editors didn't sign in when
-they made the edits. An interesting thing to look at is how many people have
-edited the Python page anonymously; we're going to need another data structure
-to store this, though.
+One of Wikipedia's greatest strengths (or weaknesses) is that it allows
+anonymous editors; people who haven't logged into the site can edit its
+contents. This both allows people who don't want to (or don't care to) create
+accounts to contribute, but also makes tracking contributions a bit harder.
 
-### Set: a data structure for storing unique elements
-A set contains only unique values; if you try to add a value that is already
-present, it will be ignored. When creating a set with predefined values, the
-syntax is almost identical to a dictionary, but when making an empty set a
-different notation is needed:
-
-    test_set = { 'red', 'green', 'blue' }
-    other_set = set()
-
-Note how `test_set` above uses braces, but there's no colon after each string;
-it's similar, but not quite the same as a dictionary.  Using a set isn't that
-difficult, here's an example:
-
-    if 'yellow' not in test_set:
-        test_set.add('yellow')
-    # Now "if 'yellow' in test_set" would return true
-
-In this example, we're doing a contains check (`not in`) and then adding an
-element to the set. We could just ignore the contains check, however, since
-adding an element that already exists fails silently.
+Now, let's take some time to look at who's contributing to the article on
+Python! (Since my user page is rather boring, really.) There's far more
+revisions to work with, for one thing.
 
 ### While loops: looping on an indeterminate condition
 So we have for loops. They're great, they let us iterate through items in a list
@@ -349,3 +330,5 @@ we can sum the number of edits by each, and see the different counts:
     print("Anonymous editors made %anon_edits edits to the Python page, while "
                      "logged-in editors made %logged_in_edits edits, for a total "
                      "of %total_edits edits." % print_params)
+
+# Resources and references
