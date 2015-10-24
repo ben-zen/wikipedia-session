@@ -92,24 +92,96 @@ This aptly-named function turns the JSON response we got from Wikipedia into a
 dictionary we can access. From here, we can start looking for interesting
 pieces. To start, we'll just iterate through the responses we have. You can go
 ahead and just see the structure of `response` by typing it at your console;
-you'll see that it's a dictionary with dictionaries inside of it. So, we're
-going to access the `query` dictionary, and inside that, access the `pages`
-dictionary. This dictionary only has one key, but we're going to use a for-loop
-anyways, because that way we can write arbitrary code and not modify it for each
-of our queries..
+you'll see that it's a dictionary with dictionaries inside of it.
+
+When you first get a response from a web API, it can be hard to tell what's
+actually in the response. Printing the JSON will tell you something, but it's
+hard to read and very dense. After expanding the JSON into a dictionary with the
+`json()` function, you can explore the contents of the dictionary:
+
+    >>> response.keys()
+    dict_keys(['continue', 'query'])
+
+This tells us we have two keys in the response dictionary, `'continue'` and
+`'query'`. We'll leave the `'continue'` key alone for now, and focus on
+`'query'` for the time being. The `'query'` key is actually the response to the
+query we just made, somewhat confusingly, but we can now explore what it is. The
+fastest way to check is to use the `type()` function to see what type the value
+is:
+
+    >>> type(response['query'])
+    <class 'dict'>
+
+This tells us that `response['query']` is a dictionary, so we can call `.keys()`
+on it:
+
+    >>> response['query'].keys()
+    dict_keys(['pages'])
+
+So there's only one key in the `response['query']` dictionary; I'm going to pull
+the value of that key out of the response, now, and put it in its own variable
+so I don't have to keep rewriting all of these strings:
+
+    >>> pages = response['query']['pages']
+    >>> type(pages)
+    <class 'dict'>
+    >>> pages.keys()
+    dict_keys(['44376332'])
+    >>> type(pages['44376332'])
+    <class 'dict'>
+    >>> pages['44376332'].keys()
+    dict_keys(['title', 'pageid', 'links', 'ns'])
+
+So, here, I've dug down a few more layers. That long number there is actually
+the `'pageid'` of my userpage; it's the identifier that Wikipedia uses
+internally to find my page. `'ns'` is short for namespace; my page is in the
+`User` namespace, which is namespace number 2 (but that's not important to our
+current discussion.) Instead, let's look at the `'links'` key, which has the
+details I'm interested in:
+
+    >>> user_page = pages['44376332']
+    >>> type(user_page['links'])
+    <class 'list'>
+
+Okay, so this is a list. Now instead of indexing by key, I need to index by
+... well, index. So we can see what the type of the first element in the list
+is:
+
+    >>> type(user_page['links'][0])
+    <class 'dict'>
+
+Now, I happen to know that there are the keys `'title'` and `'ns'` (there's that
+namespace again) inside this dictionary; we only really care about the `'title'`
+key right now, however.
+
+To recap: we're looking at a dictionary that contains a dictionary that contains
+a dictionary that contains a list of dictionaries. Wow, that's a lot to keep
+track of. Oh, and we want to do the same thing for each item in that list. We
+know how to do that, though, because we have loops!
+
+Instead of just using my handy `user_page` variable here, I'm going to make my
+loop a bit more generic than just working with my single user page, so that we
+can reuse it (or something similar) in the future. At first, I just want to see
+the title of the pages (or single page) in the response:
+
+    for page in response['query']['pages']:
+        print(response['query']['pages'][page]['title'])
+
+Okay, so that printed out the title of the page. But we can do more with this!
+Now if we create _another_ loop inside of that loop, we can iterate over the
+links in the list of links, and print _their_ titles:
 
     for page in response["query"]["pages"]:
         for link in response['query']['pages'][page]['links']:
             print(link['title'])
 
-This loop iterates through the dictionary of pages in the query dictionary;
-because there is only one page that we queried for, it only contains one
-key. From that, we pull out all of the links in that page (the list `links`) and
-iterate over that, pulling the title out of each link dictionary.
+Now we've explored the structure of our query's response, and even built _nested
+loops_ to see the contents of a list inside a dictionary.
 
 # Building a better API call
 That last call got us the information we needed, but it was a very long string
-to write. Instead, the requests library has a better way to build a call.
+to write. Instead, the requests library has a better way to build an API call,
+using a dictionary!
 
 ## Parameters dictionary
 In requests, we can supply a dictionary of parameters with a GET request. So,
@@ -147,6 +219,7 @@ field.
 
         if 'continue' in response:
             parameters['continue'] = response['continue']['continue']
+            parameters['plcontinue'] = response['continue']['plcontinue']
         else:
             break
 
@@ -166,11 +239,12 @@ also look at Mako's user page:
 
     parameters['titles'] += '|User:Benjamin Mako Hill'
 
-The `+=` in the line above means "add to existing value", so in this case it
-appends that string to the end of the string already stored at `'titles'`. (In
-the file, the string has already been appended.) We're also going to switch from
-printing out the contents of the response to storing the links in lists
-instead, in a dictionary where the keys are the names of our pages:
+The `+=` in the line above means "add to the existing variable", so in this case
+it appends that string to the end of the string already stored at
+`'titles'`. (In the file, the string has already been appended.) We're also
+going to switch from printing out the contents of the response to storing the
+links in lists instead, in a dictionary where the keys are the names of our
+pages:
 
     page_links = {}
 
